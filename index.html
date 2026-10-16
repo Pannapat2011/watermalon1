@@ -810,6 +810,16 @@
         .price-pair > div.is-site label::after { content: 'เว็บนี้ใช้'; margin-left: 8px; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 6px; background: color-mix(in srgb, var(--brand-primary) 12%, transparent); color: var(--brand-primary); vertical-align: 1px; }
         .price-pair > div.is-site input { border-color: color-mix(in srgb, var(--brand-primary) 55%, var(--hair-strong)); }
 
+        .unit-row { display: flex; gap: 10px; align-items: stretch; margin-bottom: 8px; }
+        .unit-row input { margin: 0; flex: 1; min-width: 0; }
+        .unit-seg { margin: 0; flex: 0 0 auto; }
+        .unit-seg .seg-btn { padding: 10px 16px; min-width: 54px; }
+        .unit-conv { font-size: 13.5px; color: var(--text-muted); min-height: 20px; margin: 0 2px 18px; }
+        .unit-conv b { color: var(--brand-primary); font-weight: 600; }
+        .unit-conv.bad { color: var(--danger); }
+        .kg-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; white-space: nowrap; }
+        .dash-sub { display: block; font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
         /* ---------- ภาพรวม ---------- */
         .dash-grid { gap: 14px; margin-top: 4px; }
         .dash-box { text-align: left; padding: 20px 20px 18px; border-radius: 16px; background: var(--sheet-2); border: 1px solid var(--hair); box-shadow: none; position: relative; overflow: hidden; }
@@ -1192,7 +1202,7 @@
         <div id="dashboard" class="card active">
             <h2>ภาพรวมคลังสินค้า</h2>
             <div class="dash-grid">
-                <div class="dash-box"><p>คงเหลือรวม (ชิ้น)</p><span class="text-blue" id="dash-total">0</span></div>
+                <div class="dash-box"><p>คงเหลือรวม (ลูก)</p><span class="text-blue" id="dash-total">0</span><small class="dash-sub" id="dash-total-kg"></small></div>
                 <div class="dash-box"><p>รับเข้าวันนี้</p><span class="text-green" id="dash-in">0</span></div>
                 <div class="dash-box"><p>เบิกออกวันนี้</p><span class="text-red" id="dash-out">0</span></div>
                 <div class="dash-box"><p id="dash-value-label">มูลค่าคลัง (฿)</p><span class="text-dark" id="dash-value">0</span></div>
@@ -1252,10 +1262,16 @@
             <div id="in-builder"></div>
 
             <label for="in-qty">จำนวนที่รับเข้า</label>
-            <input type="number" id="in-qty" placeholder="0" min="1" inputmode="numeric" onkeydown="if(event.key==='Enter') receiveItem()">
+            <div class="unit-row">
+                <input type="number" id="in-qty" placeholder="0" min="0" step="any" inputmode="decimal" oninput="unitPreview('in')" onkeydown="if(event.key==='Enter') receiveItem()">
+                <div class="seg unit-seg" id="in-unit" role="group" aria-label="หน่วย">
+                    <button type="button" class="seg-btn active" data-u="pc">ลูก</button><button type="button" class="seg-btn" data-u="kg">กก.</button><button type="button" class="seg-btn" data-u="ton">ตัน</button>
+                </div>
+            </div>
+            <div class="unit-conv" id="in-conv"></div>
             <div class="form-grid price-pair">
-                <div data-key="price"><label for="in-price">ราคาขายออนไลน์ (฿/ชิ้น)</label><input type="number" id="in-price" placeholder="0" min="0" step="0.01" inputmode="decimal"></div>
-                <div data-key="factory"><label for="in-factory">ราคาขายหน้าโรงงาน (฿/ชิ้น)</label><input type="number" id="in-factory" placeholder="0" min="0" step="0.01" inputmode="decimal"></div>
+                <div data-key="price"><label for="in-price">ราคาขายออนไลน์ (฿/ลูก)</label><input type="number" id="in-price" placeholder="0" min="0" step="0.01" inputmode="decimal"></div>
+                <div data-key="factory"><label for="in-factory">ราคาขายหน้าโรงงาน (฿/ลูก)</label><input type="number" id="in-factory" placeholder="0" min="0" step="0.01" inputmode="decimal"></div>
             </div>
             <label for="in-image">ลิงก์รูปภาพ</label>
             <input type="text" id="in-image" placeholder="วางลิงก์รูป (Google Drive ก็ได้)">
@@ -1281,7 +1297,13 @@
             <label for="out-item">รายการที่จะเบิก</label>
             <select id="out-item"><option value="">กำลังโหลดข้อมูล...</option></select>
             <label for="out-qty">จำนวนที่จะเบิก</label>
-            <input type="number" id="out-qty" placeholder="0" min="1" inputmode="numeric" onkeydown="if(event.key==='Enter') issueItem()">
+            <div class="unit-row">
+                <input type="number" id="out-qty" placeholder="0" min="0" step="any" inputmode="decimal" oninput="unitPreview('out')" onkeydown="if(event.key==='Enter') issueItem()">
+                <div class="seg unit-seg" id="out-unit" role="group" aria-label="หน่วย">
+                    <button type="button" class="seg-btn active" data-u="pc">ลูก</button><button type="button" class="seg-btn" data-u="kg">กก.</button><button type="button" class="seg-btn" data-u="ton">ตัน</button>
+                </div>
+            </div>
+            <div class="unit-conv" id="out-conv"></div>
             <button id="btn-issue" class="btn btn-danger" style="margin-top: 10px;" onclick="issueItem()">ยืนยันเบิกออก</button>
         </div>
 
@@ -1357,8 +1379,8 @@
             <label for="edit-qty">คงเหลือ</label>
             <input type="number" id="edit-qty" min="0">
             <div class="form-grid price-pair">
-                <div data-key="price"><label for="edit-price">ราคาขายออนไลน์ (฿/ชิ้น)</label><input type="number" id="edit-price" min="0" step="0.01"></div>
-                <div data-key="factory"><label for="edit-factory">ราคาขายหน้าโรงงาน (฿/ชิ้น)</label><input type="number" id="edit-factory" min="0" step="0.01"></div>
+                <div data-key="price"><label for="edit-price">ราคาขายออนไลน์ (฿/ลูก)</label><input type="number" id="edit-price" min="0" step="0.01"></div>
+                <div data-key="factory"><label for="edit-factory">ราคาขายหน้าโรงงาน (฿/ลูก)</label><input type="number" id="edit-factory" min="0" step="0.01"></div>
             </div>
             <label for="edit-image">ลิงก์รูปภาพ</label>
             <input type="text" id="edit-image">
@@ -1536,6 +1558,53 @@
     const SALE_KEY = SITE === 'nichcha' ? 'factory' : 'price';
     const SALE_LABEL = SITE === 'nichcha' ? 'ราคาหน้าโรงงาน' : 'ราคาออนไลน์';
     const salePrice = it => Number(it && it[SALE_KEY]) || 0;
+
+    /* ===== หน่วย ลูก / กก. / ตัน — สต๊อกนับเป็นลูก น้ำหนักคิดจากค่าเฉลี่ยของช่วงน้ำหนักไซส์นั้น ===== */
+    const UNIT = { pc: 'ลูก', kg: 'กก.', ton: 'ตัน' };
+    const unitMode = { in: 'pc', out: 'pc' };
+    function avgKg(w) {
+        const m = String(w || '').match(/^(\d+(?:\.\d+)?)(?:-(\d+(?:\.\d+)?))?$/);
+        return m ? (m[2] != null ? (Number(m[1]) + Number(m[2])) / 2 : Number(m[1])) : 0;
+    }
+    function fmtKg(kg) {
+        if (!(kg > 0)) return '0 กก.';
+        return kg >= 1000 ? `${(kg / 1000).toLocaleString('th-TH', { maximumFractionDigits: 2 })} ตัน` : `${Math.round(kg).toLocaleString('th-TH')} กก.`;
+    }
+    const itemKg = it => (Number(it.qty) || 0) * avgKg(it.weight);
+    /** แปลงค่าที่กรอก → { pcs, amount, unit, avg, ok, msg } */
+    function unitConvert(p) {
+        const amount = parseFloat($(p + '-qty').value);
+        const unit = unitMode[p];
+        const w = p === 'in' ? builderGet('in').weight : ((inventory[selectedIssueIndex()] || {}).weight || '');
+        const avg = avgKg(w);
+        if (!(amount > 0)) return { pcs: 0, amount: 0, unit, avg, ok: false };
+        if (unit === 'pc') {
+            const pcs = Math.floor(amount);
+            return { pcs, amount: pcs, unit, avg, ok: pcs > 0, msg: avg ? `≈ ${fmtKg(pcs * avg)}` : '' };
+        }
+        if (!avg) return { pcs: 0, amount, unit, avg, ok: false, msg: 'ยังไม่รู้น้ำหนักต่อลูก — ใส่น้ำหนักของไซส์ก่อน หรือกรอกเป็นลูก', bad: true };
+        const kg = unit === 'ton' ? amount * 1000 : amount;
+        const pcs = Math.max(1, Math.round(kg / avg));
+        return { pcs, amount, unit, avg, ok: true, msg: `≈ <b>${pcs.toLocaleString('th-TH')} ลูก</b> · คิดจากน้ำหนักเฉลี่ย ${avg} กก./ลูก` };
+    }
+    function unitPreview(p) {
+        const box = $(p + '-conv'); if (!box) return;
+        const c = unitConvert(p);
+        box.innerHTML = c.msg || '';
+        box.classList.toggle('bad', !!c.bad);
+        box.classList.toggle('on', !!c.msg);
+    }
+    ['input', 'click', 'change'].forEach(ev => document.addEventListener(ev, e => {
+        if (e.target.closest && e.target.closest('#in-builder')) setTimeout(() => unitPreview('in'), 0);
+    }));
+    document.addEventListener('click', e => {
+        const b = e.target.closest('.unit-seg .seg-btn'); if (!b) return;
+        const p = b.parentElement.id.split('-')[0];
+        unitMode[p] = b.dataset.u;
+        b.parentElement.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('active', x === b));
+        $(p + '-qty').placeholder = b.dataset.u === 'pc' ? '0' : b.dataset.u === 'kg' ? 'เช่น 500' : 'เช่น 1.5';
+        unitPreview(p); $(p + '-qty').focus();
+    });
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.price-pair > div').forEach(d => d.classList.toggle('is-site', d.dataset.key === SALE_KEY));
         const th = document.getElementById('th-price'); if (th) th.textContent = SALE_LABEL;
@@ -1968,7 +2037,7 @@
         else {
             const match = inventory.find(it => it.name === name && (it.lot || '') === f.lot);
             if (p === 'in') {
-                if (match) { sub = `มีในคลังแล้ว · คงเหลือ ${fmt(match.qty)} ชิ้น → จะบวกเพิ่ม`; cls = 'ok'; }
+                if (match) { sub = `มีในคลังแล้ว · คงเหลือ ${fmt(match.qty)} ลูก → จะบวกเพิ่ม`; cls = 'ok'; }
                 else sub = '✨ สินค้าใหม่ — ระบบจะเพิ่มแถวใหม่ในชีทให้อัตโนมัติ';
             } else {
                 if (match && editTarget && itemKey(match) !== editTarget) { sub = '⚠️ ชื่อ+ล็อตนี้ซ้ำกับสินค้าที่มีอยู่แล้ว'; cls = 'warn'; }
@@ -2023,6 +2092,7 @@
         mountBuilders();
 
         $('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+        $('out-item').addEventListener('change', () => unitPreview('out'));
         $('out-item').addEventListener('change', () => {
             const i = selectedIssueIndex();
             if (i !== -1) showIssuePreview(inventory[i]); else $('out-preview').style.display = 'none';
@@ -2216,7 +2286,7 @@
                 return `<div style="background:${bg}; padding:15px; border-radius:12px; margin-bottom:10px; border-left:5px solid ${color};">
                     <div style="font-weight:600; font-size:15px;">${isIn ? '📥 รับเข้า' : '📤 เบิกออก'} : ${escapeHtml(log.name)}${log.lot ? ` <span style="opacity:.6; font-weight:400;">(ล็อต ${escapeHtml(log.lot)})</span>` : ''}</div>
                     <div style="font-size:13px; color:var(--text-muted); display:flex; justify-content:space-between; margin-top:8px; gap:10px;">
-                        <span>จำนวน: <strong style="color:${color}; font-size:15px;">${fmt(log.qty)}</strong> ชิ้น</span>
+                        <span>จำนวน: <strong style="color:${color}; font-size:15px;">${fmt(log.qty)}</strong> ลูก</span>
                         <span>${escapeHtml(log.time || '')} ${log.user ? '· ' + escapeHtml(log.user) : ''}</span>
                     </div></div>`;
             }).join('');
@@ -2317,7 +2387,9 @@
         if (btn.disabled) return;
         const f = builderGet('in');
         const barcode = norm($('in-barcode').value);
-        const qty = parseInt($('in-qty').value, 10);
+        const conv = unitConvert('in');
+        if (conv.bad) { showNotification('แปลงหน่วยไม่ได้', conv.msg, 'warning'); return; }
+        const qty = conv.pcs;
         const price = parseFloat($('in-price').value) || 0;
         const factory = parseFloat($('in-factory').value) || 0;
         const image = norm($('in-image').value);
@@ -2349,11 +2421,12 @@
         todayLogs.push({ type: 'IN', name, lot: f.lot, qty, user: loggedInUser, time: nowHM() });
 
         ['in-barcode', 'in-qty', 'in-price', 'in-factory', 'in-image'].forEach(id => $(id).value = '');
+        unitPreview('in');
         builderReset('in', true);  // คงประเภท+สายพันธุ์ไว้ รับไซส์ถัดไปได้เร็ว
         renderAll(); bounceBadge();
-        showNotification('กำลังบันทึก', `รับ ${name} +${qty} ชิ้น (คงเหลือ ${fmt(it.qty)})`, 'info');
+        showNotification('กำลังบันทึก', `รับ ${name} +${qty} ลูก${conv.unit !== 'pc' ? ` (${conv.amount} ${UNIT[conv.unit]})` : ''} · คงเหลือ ${fmt(it.qty)}`, 'info');
 
-        sendWrite('receive', { ...f, qty, price, factory, image, barcode }, `รับ ${name} +${qty} ชิ้น`);
+        sendWrite('receive', { ...f, qty, price, factory, image, barcode, unit: conv.unit, amount: conv.amount }, `รับ ${name} +${qty} ลูก`);
         setTimeout(() => { btn.disabled = false; }, 300);
     }
 
@@ -2383,12 +2456,13 @@
     }
 
     function showIssuePreview(it) {
+        setTimeout(() => unitPreview('out'), 0);
         const box = $('out-preview');
         const img = formatImageUrl(it.image) || NO_IMG;
         box.innerHTML = `<div class="np-swatch" style="background:${it.color}"></div>
             <img src="${escapeHtml(img)}" alt="" style="width:50px;height:50px;border-radius:12px;object-fit:cover" onerror="this.onerror=null;this.src=NO_IMG">
             <div><div class="np-name">${escapeHtml(it.name)}</div>
-            <div class="np-sub">${typeBadge(it.type)} ${it.lot ? '· ล็อต ' + escapeHtml(it.lot) + ' ' : ''}· คงเหลือ <strong style="color:${it.qty <= LOW_STOCK ? 'var(--danger)' : 'var(--success)'}">${fmt(it.qty)}</strong> ชิ้น</div></div>`;
+            <div class="np-sub">${typeBadge(it.type)} ${it.lot ? '· ล็อต ' + escapeHtml(it.lot) + ' ' : ''}· คงเหลือ <strong style="color:${it.qty <= LOW_STOCK ? 'var(--danger)' : 'var(--success)'}">${fmt(it.qty)}</strong> ลูก</div></div>`;
         box.style.display = 'flex';
     }
 
@@ -2420,11 +2494,11 @@
     async function issueItem() {
         const btn = $('btn-issue');
         if (btn.disabled) return;
-        const q0 = parseInt($('out-qty').value, 10);
+        const q0 = unitConvert('out').pcs;
         if (SECURE.issueQty > 0 && q0 >= SECURE.issueQty && Date.now() >= elevatedUntil) {
             const keyBefore = $('out-item').value;
             btn.disabled = true;
-            const ok = await ensureElevated(`เบิกสินค้าตั้งแต่ ${SECURE.issueQty} ชิ้นขึ้นไป`);
+            const ok = await ensureElevated(`เบิกสินค้าตั้งแต่ ${SECURE.issueQty} ลูกขึ้นไป`);
             btn.disabled = false;
             if (!ok) return;
             if (keyBefore && [...$('out-item').options].some(o => o.value === keyBefore)) $('out-item').value = keyBefore;
@@ -2435,7 +2509,9 @@
         }
         if (index === -1) { showNotification('แจ้งเตือน', 'ไม่พบสินค้า หรือยังไม่ได้เลือกรายการ', 'warning'); return; }
 
-        const qty = parseInt($('out-qty').value, 10);
+        const conv = unitConvert('out');
+        if (conv.bad) { showNotification('แปลงหน่วยไม่ได้', conv.msg, 'warning'); return; }
+        const qty = conv.pcs;
         if (!(qty > 0)) { showNotification('แจ้งเตือน', 'กรุณาใส่จำนวนที่ต้องการเบิก', 'warning'); return; }
         const it = inventory[index];
         if (qty > it.qty) { showNotification('ข้อผิดพลาด', `สต๊อกไม่พอเบิก (มีแค่ ${fmt(it.qty)})`, 'danger'); return; }
@@ -2445,13 +2521,13 @@
         totalOut += qty;
         todayLogs.push({ type: 'OUT', name: it.name, lot: it.lot, qty, user: loggedInUser, time: nowHM() });
 
-        $('out-barcode').value = ''; $('out-qty').value = ''; $('out-item').value = '';
+        $('out-barcode').value = ''; $('out-qty').value = ''; $('out-item').value = ''; unitPreview('out');
         $('out-preview').style.display = 'none';
         renderAll(); bounceBadge();
         const warn = it.qty === 0 ? ' — หมดสต๊อก!' : it.qty <= LOW_STOCK ? ' — ใกล้หมด' : '';
-        showNotification('กำลังบันทึก', `เบิก ${it.name} -${qty} ชิ้น (เหลือ ${fmt(it.qty)})${warn}`, warn ? 'warning' : 'info');
+        showNotification('กำลังบันทึก', `เบิก ${it.name} -${qty} ลูก (เหลือ ${fmt(it.qty)})${warn}`, warn ? 'warning' : 'info');
 
-        sendWrite('issue', { name: it.name, lot: it.lot || '', qty }, `เบิก ${it.name} -${qty} ชิ้น`);
+        sendWrite('issue', { name: it.name, lot: it.lot || '', qty, unit: conv.unit, amount: conv.amount }, `เบิก ${it.name} -${qty} ลูก`);
         setTimeout(() => { btn.disabled = false; $('out-barcode').focus(); }, 300);
     }
 
@@ -2513,7 +2589,7 @@
         const it = editTargetItem();
         if (!it) return;
         if (pendingWrites > 0) { showNotification('รอสักครู่', 'กำลังบันทึกรายการก่อนหน้า', 'warning'); return; }
-        if (!confirm(`ลบ "${it.name}"${it.lot ? ' ล็อต ' + it.lot : ''} ออกจากระบบ?\nคงเหลือ ${fmt(it.qty)} ชิ้น — ลบแล้วกู้คืนจากเว็บไม่ได้`)) return;
+        if (!confirm(`ลบ "${it.name}"${it.lot ? ' ล็อต ' + it.lot : ''} ออกจากระบบ?\nคงเหลือ ${fmt(it.qty)} ลูก — ลบแล้วกู้คืนจากเว็บไม่ได้`)) return;
         const btn = $('btn-delete');
         btn.disabled = true;
         try {
@@ -2536,11 +2612,12 @@
         groupInventory().forEach(t => {
             const tm = typeMeta(t.type);
             const sum = t.varieties.reduce((s, v) => s + v.items.reduce((a, b) => a + b.qty, 0), 0);
-            parts.push(`<tr class="type-row" data-type="${escapeHtml(t.type)}"><td colspan="8" style="background:${tm.bg}">${tm.icon} ${tm.label} <span>· ${t.varieties.length} สายพันธุ์ · คงเหลือ ${fmt(sum)} ชิ้น</span></td></tr>`);
+            const tkg = t.varieties.reduce((s, v) => s + v.items.reduce((a, b) => a + itemKg(b), 0), 0);
+            parts.push(`<tr class="type-row" data-type="${escapeHtml(t.type)}"><td colspan="8" style="background:${tm.bg}">${tm.icon} ${tm.label} <span>· ${t.varieties.length} สายพันธุ์ · คงเหลือ ${fmt(sum)} ลูก ≈ ${fmtKg(tkg)}</span></td></tr>`);
             t.varieties.forEach(v => {
                 const vkey = escapeHtml(t.type + '|' + v.key);
                 const vsum = v.items.reduce((a, b) => a + b.qty, 0);
-                parts.push(`<tr class="var-row" data-type="${escapeHtml(t.type)}" data-var="${vkey}"><td colspan="8"><span class="dot" style="background:${v.color}; width:18px; height:18px;"></span> ${escapeHtml(v.variety)} <small>${v.items.length} ไซส์ · ${fmt(vsum)} ชิ้น</small></td></tr>`);
+                parts.push(`<tr class="var-row" data-type="${escapeHtml(t.type)}" data-var="${vkey}"><td colspan="8"><span class="dot" style="background:${v.color}; width:18px; height:18px;"></span> ${escapeHtml(v.variety)} <small>${v.items.length} ไซส์ · ${fmt(vsum)} ลูก ≈ ${fmtKg(v.items.reduce((a, b) => a + itemKg(b), 0))}</small></td></tr>`);
                 v.items.forEach(it => {
                     const index = inventory.indexOf(it);
                     const img = formatImageUrl(it.image);
@@ -2554,7 +2631,7 @@
                         <td style="color:var(--text-muted);">${escapeHtml(it.lot || '-')}</td>
                         <td>${bc}</td>
                         <td style="font-weight:600;">฿${fmt(salePrice(it))}</td>
-                        <td><span class="status-badge ${cls}">${fmt(it.qty)}</span></td>
+                        <td><span class="status-badge ${cls}">${fmt(it.qty)}</span>${avgKg(it.weight) && it.qty ? `<div class="kg-sub">≈ ${fmtKg(itemKg(it))}</div>` : ''}</td>
                         <td><div class="row-actions">
                             <button class="btn-edit" data-action="edit" data-index="${index}">แก้ไข</button>
                             <button class="btn-icon" title="พิมพ์สติกเกอร์" data-action="print" data-index="${index}">🖨</button>
@@ -2714,25 +2791,27 @@
 
     /* ================= Dashboard ================= */
     function updateDashboard() {
-        let totalStock = 0, totalValue = 0, cOk = 0, cLow = 0, cOut = 0;
+        let totalStock = 0, totalValue = 0, totalKg = 0, cOk = 0, cLow = 0, cOut = 0;
         const lows = [];
         const split = { 'มีเมล็ด': { qty: 0, n: 0, v: new Set() }, 'ไร้เมล็ด': { qty: 0, n: 0, v: new Set() } };
         inventory.forEach(it => {
             totalStock += it.qty;
+            totalKg += itemKg(it);
             totalValue += it.qty * salePrice(it);
-            const s = split[it.type]; if (s) { s.qty += it.qty; s.n++; s.v.add(norm(it.variety).toLowerCase()); }
+            const s = split[it.type]; if (s) { s.qty += it.qty; s.kg = (s.kg || 0) + itemKg(it); s.n++; s.v.add(norm(it.variety).toLowerCase()); }
             if (it.qty === 0) { cOut++; lows.push(it); }
             else if (it.qty <= LOW_STOCK) { cLow++; lows.push(it); }
             else cOk++;
         });
         $('dash-total').textContent = fmt(totalStock);
+        $('dash-total-kg').textContent = `≈ ${fmtKg(totalKg)}`;
         $('dash-in').textContent = fmt(totalIn);
         $('dash-out').textContent = fmt(totalOut);
         $('dash-value').textContent = fmt(Math.round(totalValue));
-        $('split-seeded').textContent = fmt(split['มีเมล็ด'].qty) + ' ชิ้น';
-        $('split-seeded-sub').textContent = `${split['มีเมล็ด'].v.size} สายพันธุ์ · ${split['มีเมล็ด'].n} รายการ`;
-        $('split-seedless').textContent = fmt(split['ไร้เมล็ด'].qty) + ' ชิ้น';
-        $('split-seedless-sub').textContent = `${split['ไร้เมล็ด'].v.size} สายพันธุ์ · ${split['ไร้เมล็ด'].n} รายการ`;
+        $('split-seeded').textContent = fmt(split['มีเมล็ด'].qty) + ' ลูก';
+        $('split-seeded-sub').textContent = `≈ ${fmtKg(split['มีเมล็ด'].kg || 0)} · ${split['มีเมล็ด'].v.size} สายพันธุ์ · ${split['มีเมล็ด'].n} รายการ`;
+        $('split-seedless').textContent = fmt(split['ไร้เมล็ด'].qty) + ' ลูก';
+        $('split-seedless-sub').textContent = `≈ ${fmtKg(split['ไร้เมล็ด'].kg || 0)} · ${split['ไร้เมล็ด'].v.size} สายพันธุ์ · ${split['ไร้เมล็ด'].n} รายการ`;
 
         const dData = [cOk, cLow, cOut];
         if (doughnutChart) { doughnutChart.data.datasets[0].data = dData; doughnutChart.update(); }
@@ -3135,7 +3214,7 @@
             <div style="color:var(--text-muted);font-size:13px">ตั้งครั้งเดียว ต่อไปมองกล้องก็เข้าระบบได้ และใช้ยืนยันรายการสำคัญแทนรหัสผ่าน</div></div>
             <button class="btn btn-primary" onclick="enrollMyFace()">📸 ตั้งค่าใบหน้าของฉัน</button>`;
         const acts = (SECURE.actions || []).filter(a => !a.startsWith('face')).map(a => SECURE_LABELS[a] || a);
-        if (SECURE.issueQty > 0) acts.push(`เบิกตั้งแต่ ${SECURE.issueQty} ชิ้น`);
+        if (SECURE.issueQty > 0) acts.push(`เบิกตั้งแต่ ${SECURE.issueQty} ลูก`);
         acts.push('ตั้งค่า/ปิดใบหน้า');
         $('sec-list').innerHTML = acts.map(a => `<span>🔒 ${escapeHtml(a)}</span>`).join('');
         $('sec-sec').textContent = SECURE.elevateSec >= 60 ? `${Math.round(SECURE.elevateSec / 60)} นาที` : `${SECURE.elevateSec} วินาที`;
@@ -4069,7 +4148,7 @@
         const box = $('best-list');
         const totalSold = list.reduce((s, it) => s + it.sold, 0);
         $('best-sub').textContent = list.length
-            ? `${list.length} รายการ · ยอดเบิกออก ${SOLD_DAYS} วันล่าสุดรวม ${fmt(totalSold)} ชิ้น`
+            ? `${list.length} รายการ · ยอดเบิกออก ${SOLD_DAYS} วันล่าสุดรวม ${fmt(totalSold)} ลูก`
             : 'ยังไม่ได้ติดดาวสินค้าตัวไหน';
 
         if (!list.length) {
@@ -4112,7 +4191,7 @@
         // แนะนำ: ขายดีแต่ยังไม่ติดดาว
         const sug = inventory.filter(it => !it.best && it.sold > 0).sort((a, b) => b.sold - a.sold).slice(0, 3);
         $('best-suggest').innerHTML = sug.length
-            ? '💡 ขายดีแต่ยังไม่ติดดาว: ' + sug.map(it => `<button class="sug-chip" data-action-best="${inventory.indexOf(it)}"><span class="dot" style="background:${it.color}"></span>${escapeHtml(it.variety)} ${escapeHtml(it.size || '')} · ${fmt(it.sold)} ชิ้น <b>☆ ติดดาว</b></button>`).join('')
+            ? '💡 ขายดีแต่ยังไม่ติดดาว: ' + sug.map(it => `<button class="sug-chip" data-action-best="${inventory.indexOf(it)}"><span class="dot" style="background:${it.color}"></span>${escapeHtml(it.variety)} ${escapeHtml(it.size || '')} · ${fmt(it.sold)} ลูก <b>☆ ติดดาว</b></button>`).join('')
             : '';
     }
 
